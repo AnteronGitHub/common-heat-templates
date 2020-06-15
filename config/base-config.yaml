@@ -1,0 +1,29 @@
+heat_template_version: 2016-10-14
+
+description: |
+    Heat stack for common basic CloudInit.
+
+parameters:
+    timezone:
+        type: string
+        default: UTC
+
+resources:
+    config:
+        type: OS::Heat::CloudConfig
+        properties:
+            cloud_config:
+                final_message: |
+                    Server configured successfully!
+                timezone: { get_param: timezone }
+                package_update: true
+                package_upgrade: true
+                power_state:
+                    mode: reboot
+                    message: Rebooting
+                    timeout: 30
+                    condition: True
+
+outputs:
+    OS::stack_id:
+        value: { get_resource: config }
