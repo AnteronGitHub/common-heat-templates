@@ -1,0 +1,25 @@
+heat_template_version: 2016-10-14
+
+description: |
+    Heat stack for injecting given public key as authorized key for root user.
+
+parameters:
+    authorized_key:
+        type: string
+
+resources:
+    config:
+        type: OS::Heat::SoftwareConfig
+        properties:
+            config:
+                str_replace:
+                    template: |
+                        #!/bin/sh
+                        echo "$authorized_key" | su - root -c 'tee .ssh/authorized_keys'
+                        su - root -c 'chmod 600 .ssh/authorized_keys'
+                    params:
+                        $authorized_key: { get_param: authorized_key }
+
+outputs:
+    OS::stack_id:
+        value: { get_resource: config }
