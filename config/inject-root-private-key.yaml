@@ -1,0 +1,25 @@
+heat_template_version: 2016-10-14
+
+description: |
+    Heat stack for injecting given private key for root user.
+
+parameters:
+    private_key:
+        type: string
+
+resources:
+    config:
+        type: OS::Heat::SoftwareConfig
+        properties:
+            config:
+                str_replace:
+                    template: |
+                        #!/bin/sh
+                        echo "$private_key" | su - root -c 'tee -a .ssh/id_rsa'
+                        su - root -c 'chmod 600 .ssh/id_rsa'
+                    params:
+                        $private_key: { get_param: private_key }
+
+outputs:
+    OS::stack_id:
+        value: { get_resource: config }

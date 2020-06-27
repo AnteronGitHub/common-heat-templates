@@ -1,0 +1,47 @@
+heat_template_version: 2016-10-14
+
+description: |
+    Heat stack for common network that is routed to external 'public' network.
+
+parameters:
+    public_net:
+        type: string
+    cidr:
+        type: string
+        default: 172.29.236.0/22
+    gateway_ip:
+        type: string
+        default: 172.29.236.1
+    dns_nameservers:
+        type: comma_delimited_list
+        default: 8.8.8.8
+
+resources:
+    private_net:
+        type: OS::Neutron::Net
+
+    private_subnet:
+        type: OS::Neutron::Subnet
+        properties:
+            cidr: { get_param: cidr }
+            gateway_ip: { get_param: gateway_ip }
+            dns_nameservers: { get_param: dns_nameservers }
+            network: { get_resource: private_net }
+
+    router:
+        type: OS::Neutron::Router
+        properties:
+            external_gateway_info:
+                network: { get_param: public_net }
+
+    router_interface:
+        type: OS::Neutron::RouterInterface
+        properties:
+            router_id: { get_resource: router }
+            subnet_id: { get_resource: private_subnet }
+
+outputs:
+    private_net:
+        value: { get_attr: [ private_net, name ] }
+    private_subnet:
+        value: { get_attr: [ private_subnet, name ] }

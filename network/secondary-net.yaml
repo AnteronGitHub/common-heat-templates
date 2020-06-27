@@ -1,0 +1,33 @@
+heat_template_version: 2016-10-14
+
+description: |
+    Heat stack for non-primary network, meaning that it will not be used as the
+    default gateway.
+
+parameters:
+    cidr:
+        type: string
+        default: 172.29.240.0/22
+    gateway_ip:
+        type: string
+        default: 172.29.240.1
+
+resources:
+    private_net:
+        type: OS::Neutron::Net
+
+    private_subnet:
+        type: OS::Neutron::Subnet
+        properties:
+            cidr: { get_param: cidr }
+            gateway_ip: { get_param: gateway_ip }
+            host_routes:
+              - destination: { get_param: cidr }
+                nexthop: { get_param: gateway_ip }
+            network: { get_resource: private_net }
+
+outputs:
+    private_net:
+        value: { get_attr: [ private_net, name ] }
+    private_subnet:
+        value: { get_attr: [ private_subnet, name ] }
