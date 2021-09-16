@@ -40,6 +40,11 @@ parameters:
     description: Name of the server
     default: server
 
+  server_user_data:
+    type: string
+    description: Configuration resource ID used for the server
+    default: Null
+
 resources:
 
   # Network resources
@@ -82,11 +87,6 @@ resources:
             floatingip_id: { get_resource: server_floating_ip }
             port_id: { get_resource: server_port }
 
-  # Configuration resources
-  # ~~~~~~~~~~~~~~~~~~~~~~~
-  server_base_config:
-    type: ../config/base-config.yaml
-
   # Computing resources
   # ~~~~~~~~~~~~~~~~~~~
   server:
@@ -99,9 +99,12 @@ resources:
       networks:
         - port: { get_resource: server_port }
       user_data_format: RAW
-      user_data: { get_resource: server_base_config }
+      user_data: { get_param: server_user_data }
 
 outputs:
+  OS::stack_id:
+    description: Server in a network with a floating ip
+    value: { get_resource: server }
 
   server_floating_ip:
     description: Floating IP associated with the created server
